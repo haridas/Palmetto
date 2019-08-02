@@ -76,7 +76,7 @@ public class PositionStoringLuceneIndexCreator extends AbstractLuceneIndexCreato
         Analyzer analyzer = new SimpleAnalyzer(true);
         try {
             IndexWriterConfig config = new IndexWriterConfig(version, analyzer);
-            config.setOpenMode(OpenMode.CREATE);
+            config.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
             FieldType fieldType = new FieldType(TextField.TYPE_NOT_STORED);
             fieldType.setIndexed(true);

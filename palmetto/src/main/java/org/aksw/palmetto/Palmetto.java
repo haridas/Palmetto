@@ -19,7 +19,7 @@ package org.aksw.palmetto;
 
 import java.io.PrintStream;
 import java.util.Arrays;
-
+import java.io.*;
 import org.aksw.palmetto.aggregation.ArithmeticMean;
 import org.aksw.palmetto.calculations.direct.FitelsonConfirmationMeasure;
 import org.aksw.palmetto.calculations.direct.LogCondProbConfirmationMeasure;
@@ -46,20 +46,31 @@ public class Palmetto {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Palmetto.class);
 
-    private static final String USAGE = "palmetto.jar <index-directory> <coherence-name> <input-file>";
+    private static final String USAGE = "java -cp palmetto.jar <index-directory> <coherence-name> <input-file>";
 
     public static final String DEFAULT_TEXT_INDEX_FIELD_NAME = "text";
     public static final String DEFAULT_DOCUMENT_LENGTH_INDEX_FIELD_NAME = "length";
 
-    public static void main(String[] args) {
-        if (args.length < 3) {
-            LOGGER.error("Wrong number of arguments. Usage:\n" + USAGE);
+    public static void main(String args[]){
+
+        if (args.length != 3) {
+            System.out.println(USAGE);
+            System.out.println("Coherence names: umass, uci, c_a, c_p, c_v, npmi");
             return;
         }
-        String indexPath = args[0];
-        String calcType = args[1].toLowerCase();
-        String inputFile = args[2];
 
+        String indexPath = args[0];
+        String cohName = args[1];
+        String inputFile = args[2];
+        //String ar[] = {"umass","uci","c_a","c_p","c_v","npmi"};
+        //String ar[] = {"umass"};
+
+        //for(int i = 0;i < ar.length;i++)
+        call(indexPath, cohName, inputFile);
+    }
+
+    public static void call(String indexPath, String calcType, String inputFile) {
+        
         CorpusAdapter corpusAdapter = getCorpusAdapter(calcType, indexPath);
         if (corpusAdapter == null) {
             return;
@@ -77,7 +88,7 @@ public class Palmetto {
         double coherences[] = coherence.calculateCoherences(wordsets);
         corpusAdapter.close();
 
-        printCoherences(coherences, wordsets, System.out);
+        printCoherences(coherences, wordsets, calcType, indexPath);
     }
 
     public static CorpusAdapter getCorpusAdapter(String calcType, String indexPath) {
@@ -156,9 +167,15 @@ public class Palmetto {
         return probEstimator;
     }
 
-    public static void printCoherences(double[] coherences, String[][] wordsets, PrintStream out) {
-        for (int i = 0; i < wordsets.length; i++) {
-            out.format("%5d\t%3.5f\t%s%n", new Object[] { i, coherences[i], Arrays.toString(wordsets[i]) });
-        }
+    public static void printCoherences(double[] coherences, String[][] wordsets, String calcType,String indexPath) {
+        try{
+		BufferedWriter writer = new BufferedWriter(new FileWriter(indexPath+"/coherence_score_"+calcType+".txt"));
+
+	for (int i = 0; i < wordsets.length; i++) {
+            	String output = i+","+coherences[i];
+		writer.write(output+"\n");
+		}		
+		writer.close();
+        }catch(Exception e){}
     }
 }
